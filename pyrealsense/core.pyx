@@ -2,6 +2,10 @@ import numpy as np
 cimport numpy as np
 from libc.string cimport memcpy
 
+from pyrealsense.enum import Format
+from pyrealsense.enum import Stream
+
+
 cdef extern from "librealsense/rs.hpp" namespace "rs":
 
     ctypedef int StreamType 'rs::stream'
@@ -23,37 +27,11 @@ cdef extern from "librealsense/rs.hpp" namespace "rs":
         void wait_for_frames()
         void* get_frame_data(StreamType stream)
 
-cdef enum:
-    depth                            = 0
-    color                            = 1
-    infrared                         = 2
-    infrared2                        = 3
-    points                           = 4
-    rectified_color                  = 5
-    color_aligned_to_depth           = 6
-    infrared2_aligned_to_depth       = 7
-    depth_aligned_to_color           = 8
-    depth_aligned_to_rectified_color = 9
-    depth_aligned_to_infrared2       = 10
-
-cdef enum:
-    any         = 0  
-    z16         = 1
-    disparity16 = 2
-    xyz32f      = 3
-    yuyv        = 4  
-    rgb8        = 5  
-    bgr8        = 6  
-    rgba8       = 7  
-    bgra8       = 8  
-    y8          = 9  
-    y16         = 10 
-    raw10       = 11
 
 cdef dict FORMAT_TO_DTYPES = {
-    z16: np.dtype('u2'),
-    disparity16: np.dtype('u2'),
-    xyz32f: np.dtype('f4'),
+    Format.z16: np.dtype('u2'),
+    Format.disparity16: np.dtype('u2'),
+    Format.xyz32f: np.dtype('f4'),
 }
 
 cdef class Device:
@@ -114,5 +92,5 @@ cdef class Device:
         dtype = FORMAT_TO_DTYPES[format]
         dst_arr = np.zeros((height, width), dtype=dtype)
         dst_ptr = dst_arr.ctypes.data
-        memcpy(<void*>src_ptr, <void*>src_ptr, <size_t>(width))
+        memcpy(<void*>dst_ptr, <void*>src_ptr, <size_t>(width * height * dtype.itemsize))
         return dst_arr
