@@ -29,10 +29,16 @@ cdef extern from "librealsense/rs.hpp" namespace "rs":
         void* get_frame_data(StreamType stream)
 
 
-cdef dict FORMAT_TO_DTYPES = {
-    Format.z16: np.dtype('u2'),
-    Format.disparity16: np.dtype('u2'),
-    Format.xyz32f: np.dtype('f4'),
+cdef dict FORMAT_CONFIG = {
+    Format.z16: (1, np.dtype('u2')),
+    Format.disparity16: (1, np.dtype('u2')),
+    Format.xyz32f: (3, np.dtype('f4')),
+    Format.rgb8: (3, np.dtype('u1')),
+    Format.bgr8: (3, np.dtype('u1')),
+    Format.rgba8: (4, np.dtype('u1')),
+    Format.bgra8: (4, np.dtype('u1')),
+    Format.y8: (1, np.dtype('u1')),
+    Format.y16: (1, np.dtype('u2')),
 }
 
 cdef class Device:
@@ -66,8 +72,10 @@ cdef class Device:
         cdef const char* s = self._device.get_usb_port_id()
         return s.decode('UTF-8', 'strict')
 
-    cpdef void enable_stream(self, int stream, int width, int height, int fmt, int framerate):
-        self._device.enable_stream(<StreamType>stream, width, height, <FormatType>fmt, framerate)
+    cpdef void enable_stream(
+            self, int stream, int width, int height, int fmt, int framerate):
+        self._device.enable_stream(
+            <StreamType>stream, width, height, <FormatType>fmt, framerate)
         self.stream_width[stream] = width
         self.stream_height[stream] = height
         self.stream_format[stream] = fmt
@@ -89,8 +97,11 @@ cdef class Device:
         cdef int width = self.stream_width[stream]
         cdef int height = self.stream_height[stream]
         cdef int fmt = self.stream_format[stream]
-        dtype = FORMAT_TO_DTYPES[fmt]
-        dst_arr = np.zeros((height, width), dtype=dtype)
+        channel, dtype = FORMAT_CONFIG[fmt]
+        shape = (height, width) if channel == 1 else (height, width, channel)
+        dst_arr = np.zeros(shape, dtype=dtype)
         cdef size_t dst_ptr = dst_arr.ctypes.data
-        memcpy(<void*>dst_ptr, <void*>src_ptr, <size_t>(width * height * dtype.itemsize))
+        memcpy(
+            <void*>dst_ptr, <void*>src_ptr,
+            <size_t>(width * height * channel * dtype.itemsize))
         return dst_arr
