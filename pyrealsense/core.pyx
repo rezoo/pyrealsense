@@ -1,6 +1,7 @@
 import numpy as np
 cimport numpy as np
 from libc.string cimport memcpy
+from libcpp.map cimport map
 
 from pyrealsense.enum import Format
 from pyrealsense.enum import Stream
@@ -38,7 +39,9 @@ cdef class Device:
 
     cdef context* _context
     cdef device* _device
-    cdef dict stream_config
+    cdef map[int, int] stream_width
+    cdef map[int, int] stream_height
+    cdef map[int, int] stream_format
 
     def __cinit__(self):
         self._context = new context()
@@ -63,14 +66,14 @@ cdef class Device:
         cdef const char* s = self._device.get_usb_port_id()
         return s.decode('UTF-8', 'strict')
 
-    cpdef void enable_stream(self, int s, int width, int height, int f, int framerate):
-        self._device.enable_stream(<StreamType>s, width, height, <FormatType>f, framerate)
-        #self.stream_config[s] = (width, height, f, framerate)
+    cpdef void enable_stream(self, int stream, int width, int height, int fmt, int framerate):
+        self._device.enable_stream(<StreamType>stream, width, height, <FormatType>fmt, framerate)
+        self.stream_width[stream] = width
+        self.stream_height[stream] = height
+        self.stream_format[stream] = fmt
 
     cpdef void disable_stream(self, int stream):
         self._device.disable_stream(<StreamType>stream)
-        #if stream in self.stream_config:
-        #    del self.stream_config[stream]
 
     cpdef void start(self):
         self._device.start()
@@ -83,14 +86,11 @@ cdef class Device:
 
     cpdef np.ndarray get_frame_data(self, int stream):
         cdef void* src_ptr = <void*>self._device.get_frame_data(<StreamType>stream)
-
-        #width, height, format, framerate = self.stream_config[stream]
-        cdef int width = 640
-        cdef int height = 480
-        cdef int format = 1
-        cdef int framerate = 30
-        dtype = FORMAT_TO_DTYPES[format]
+        cdef int width = self.stream_width[stream]
+        cdef int height = self.stream_height[stream]
+        cdef int fmt = self.stream_format[stream]
+        dtype = FORMAT_TO_DTYPES[fmt]
         dst_arr = np.zeros((height, width), dtype=dtype)
-        dst_ptr = dst_arr.ctypes.data
+        cdef size_t dst_ptr = dst_arr.ctypes.data
         memcpy(<void*>dst_ptr, <void*>src_ptr, <size_t>(width * height * dtype.itemsize))
         return dst_arr
