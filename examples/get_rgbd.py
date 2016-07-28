@@ -12,6 +12,7 @@ def main():
     print('Name:', dev.get_name())
     print('Serial:', dev.get_serial())
     print('Port ID:', dev.get_usb_port_id())
+    print('Press esc key to stop')
 
     # XXX: librealsense requires the three streams to activate it. WHY?
     dev.enable_stream(Stream.depth, 640, 480, Format.z16, 30)
@@ -28,8 +29,10 @@ def main():
         cv2.imshow('depth', depth)
         cv2.imshow('color', color)
         k = cv2.waitKey(1)  # wait 1ms
-        if k == 27: # press etc key
+        if k == 27: # press esc key
             break
+
+    dev.stop()
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
