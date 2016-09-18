@@ -18,7 +18,7 @@ Stream = populate_class([
     "color_aligned_to_depth",
     "infrared2_aligned_to_depth",
     "depth_aligned_to_color",
-    "depth_aligned_to_rectified_color,",
+    "depth_aligned_to_rectified_color",
     "depth_aligned_to_infrared2",
 ])
 
