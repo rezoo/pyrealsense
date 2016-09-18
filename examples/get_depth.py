@@ -1,4 +1,4 @@
-from pyrealsense import Device, Stream, Format
+from pyrealsense import Device, Stream, Format, Option
 import numpy as np
 import cv2
 
@@ -12,7 +12,13 @@ def main():
     print('Name:', dev.get_name())
     print('Serial:', dev.get_serial())
     print('Port ID:', dev.get_usb_port_id())
+    print('Firmware version:', dev.get_firmware_version())
+    print('One meter:', 1.0/dev.get_depth_scale())
     print('Press esc key to stop')
+
+    if dev.supports_option(Option.r200_lr_auto_exposure_enabled):
+        dev.set_option(Option.r200_lr_auto_exposure_enabled, 1)
+        print('Auto exposure: ', dev.get_option(Option.r200_lr_auto_exposure_enabled))
 
     # XXX: librealsense requires the three streams to activate it. WHY?
     dev.enable_stream(Stream.depth, 640, 480, Format.z16, 30)

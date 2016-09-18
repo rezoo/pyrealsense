@@ -2,15 +2,16 @@ import numpy as np
 cimport numpy as np
 from libc.string cimport memcpy
 from libcpp.map cimport map
+from libcpp cimport bool
 
-from pyrealsense.enum import Format
-from pyrealsense.enum import Stream
+from pyrealsense.enum import Format, Stream, Option
 
 
 cdef extern from "librealsense/rs.hpp" namespace "rs":
 
     ctypedef int StreamType 'rs::stream'
     ctypedef int FormatType 'rs::format'
+    ctypedef int OptionType 'rs::option'
 
     cdef cppclass context:
         context()
@@ -20,14 +21,21 @@ cdef extern from "librealsense/rs.hpp" namespace "rs":
     cdef cppclass device:
         const char* get_name()
         const char* get_serial()
+        const char* get_firmware_version()
         const char* get_usb_port_id()
+        const float get_depth_scale()
+
         void enable_stream(StreamType stream, int width, int height, FormatType format, int framerate)
         void disable_stream(StreamType stream)
         void start()
         void stop()
         void wait_for_frames()
         void* get_frame_data(StreamType stream)
-
+        void set_option(OptionType option, double value)
+        double get_option(OptionType option)
+        bool supports_option(OptionType option)
+        bool poll_for_frames()
+        int get_frame_timestamp(StreamType stream)
 
 cdef dict FORMAT_CONFIG = {
     Format.z16: (1, np.dtype('u2')),
@@ -68,9 +76,17 @@ cdef class Device:
         cdef const char* s = self._device.get_serial()
         return s.decode('UTF-8', 'strict')
 
+    cpdef unicode get_firmware_version(self):
+        cdef const char* s = self._device.get_firmware_version()
+        return s.decode('UTF-8', 'strict')
+
     cpdef unicode get_usb_port_id(self):
         cdef const char* s = self._device.get_usb_port_id()
         return s.decode('UTF-8', 'strict')
+
+    cpdef float get_depth_scale(self):
+        cdef float depth_scale = self._device.get_depth_scale()
+        return depth_scale
 
     cpdef void enable_stream(
             self, int stream, int width, int height, int fmt, int framerate):
@@ -105,3 +121,22 @@ cdef class Device:
             <void*>dst_ptr, <void*>src_ptr,
             <size_t>(width * height * channel * dtype.itemsize))
         return dst_arr
+
+    cpdef void set_option(self, int option, double value):
+        self._device.set_option(<OptionType>option, value)
+
+    cpdef double get_option(self, int option):
+        cdef double val = self._device.get_option(<OptionType>option)
+        return val
+
+    cpdef bool supports_option(self, int option):
+        cdef bool val = self._device.supports_option(<OptionType>option)
+        return val
+
+    cpdef bool poll_for_frames(self):
+        cdef bool ret = self._device.poll_for_frames()
+        return ret
+
+    cpdef int get_frame_timestamp(self, int stream):
+        cdef int timestamps = self._device.get_frame_timestamp(<StreamType>stream)
+        return timestamps
