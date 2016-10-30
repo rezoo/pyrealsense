@@ -49,13 +49,23 @@ cdef dict FORMAT_CONFIG = {
     Format.y16: (1, np.dtype('u2')),
 }
 
-cdef dict STREAM_TO_RAW = {
+cdef dict STREAM_TO_FORMAT = {
     # TODO what should be used for Stream.points? Color? 4 channels?
     Stream.rectified_color: Stream.color,
     Stream.color_aligned_to_depth: Stream.color,
     Stream.infrared2_aligned_to_depth: Stream.infrared2,
     Stream.depth_aligned_to_color: Stream.depth,
     Stream.depth_aligned_to_rectified_color: Stream.depth,
+    Stream.depth_aligned_to_infrared2: Stream.depth
+}
+
+cdef dict STREAM_TO_DIMENSIONS = {
+    # TODO what should be used for Stream.points? Color? 4 channels?
+    Stream.rectified_color: Stream.color,
+    Stream.color_aligned_to_depth: Stream.color,
+    Stream.infrared2_aligned_to_depth: Stream.infrared2,
+    Stream.depth_aligned_to_color: Stream.color,
+    Stream.depth_aligned_to_rectified_color: Stream.color,
     Stream.depth_aligned_to_infrared2: Stream.depth
 }
 
@@ -121,10 +131,11 @@ cdef class Device:
 
     cpdef np.ndarray get_frame_data(self, int stream):
         cdef void* src_ptr = <void*>self._device.get_frame_data(<StreamType>stream)
-        cdef int stream_key = STREAM_TO_RAW[stream] if STREAM_TO_RAW.has_key(stream) else stream
-        cdef int width = self.stream_width[stream_key]
-        cdef int height = self.stream_height[stream_key]
-        cdef int fmt = self.stream_format[stream_key]
+        cdef int format_key = STREAM_TO_FORMAT[stream] if STREAM_TO_FORMAT.has_key(stream) else stream
+        cdef int dimensions_key = STREAM_TO_DIMENSIONS[stream] if STREAM_TO_DIMENSIONS.has_key(stream) else stream
+        cdef int width = self.stream_width[dimensions_key]
+        cdef int height = self.stream_height[dimensions_key]
+        cdef int fmt = self.stream_format[format_key]
         channel, dtype = FORMAT_CONFIG[fmt]
         shape = (height, width) if channel == 1 else (height, width, channel)
         dst_arr = np.zeros(shape, dtype=dtype)
