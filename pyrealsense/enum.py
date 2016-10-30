@@ -1,27 +1,110 @@
-class Format:
-    any         = 0  
-    z16         = 1
-    disparity16 = 2
-    xyz32f      = 3
-    yuyv        = 4  
-    rgb8        = 5  
-    bgr8        = 6  
-    rgba8       = 7  
-    bgra8       = 8  
-    y8          = 9  
-    y16         = 10 
-    raw10       = 11
+class Stub:
+    pass
 
+def populate_class(items):
 
-class Stream:
-    depth                            = 0
-    color                            = 1
-    infrared                         = 2
-    infrared2                        = 3
-    points                           = 4
-    rectified_color                  = 5
-    color_aligned_to_depth           = 6
-    infrared2_aligned_to_depth       = 7
-    depth_aligned_to_color           = 8
-    depth_aligned_to_rectified_color = 9
-    depth_aligned_to_infrared2       = 10
+    cls = Stub()
+    cls.__dict__.update({ v: k for k, v in enumerate(items)})
+    return cls
+
+Stream = populate_class([
+    "depth",
+    "color",
+    "infrared",
+    "infrared2",
+    "fisheye",
+    "points",
+    "rectified_color",
+    "color_aligned_to_depth",
+    "infrared2_aligned_to_depth",
+    "depth_aligned_to_color",
+    "depth_aligned_to_rectified_color",
+    "depth_aligned_to_infrared2",
+])
+
+Format = populate_class([
+    "any",
+    "z16",
+    "disparity16",
+    "xyz32f",
+    "yuyv",
+    "rgb8",
+    "bgr8",
+    "rgba8",
+    "bgra8",
+    "y8",
+    "y16",
+    "raw10",
+    "raw16",
+    "raw8",
+])
+
+Option = populate_class([
+    "color_backlight_compensation",
+    "color_brightness",
+    "color_contrast",
+    "color_exposure",
+    "color_gain",
+    "color_gamma",
+    "color_hue",
+    "color_saturation",
+    "color_sharpness",
+    "color_white_balance",
+    "color_enable_auto_exposure",
+    "color_enable_auto_white_balance",
+    "f200_laser_power",
+    "f200_accuracy",
+    "f200_motion_range",
+    "f200_filter_option",
+    "f200_confidence_threshold",
+    "f200_dynamic_fps",
+    "sr300_auto_range_enable_motion_versus_range",
+    "sr300_auto_range_enable_laser",
+    "sr300_auto_range_min_motion_versus_range",
+    "sr300_auto_range_max_motion_versus_range",
+    "sr300_auto_range_start_motion_versus_range",
+    "sr300_auto_range_min_laser",
+    "sr300_auto_range_max_laser",
+    "sr300_auto_range_start_laser",
+    "sr300_auto_range_upper_threshold",
+    "sr300_auto_range_lower_threshold",
+    "r200_lr_auto_exposure_enabled",
+    "r200_lr_gain",
+    "r200_lr_exposure",
+    "r200_emitter_enabled",
+    "r200_depth_units",
+    "r200_depth_clamp_min",
+    "r200_depth_clamp_max",
+    "r200_disparity_multiplier",
+    "r200_disparity_shift",
+    "r200_auto_exposure_mean_intensity_set_point",
+    "r200_auto_exposure_bright_ratio_set_point",
+    "r200_auto_exposure_kp_gain",
+    "r200_auto_exposure_kp_exposure",
+    "r200_auto_exposure_kp_dark_threshold",
+    "r200_auto_exposure_top_edge",
+    "r200_auto_exposure_bottom_edge",
+    "r200_auto_exposure_left_edge",
+    "r200_auto_exposure_right_edge",
+    "r200_depth_control_estimate_median_decrement",
+    "r200_depth_control_estimate_median_increment",
+    "r200_depth_control_median_threshold",
+    "r200_depth_control_score_minimum_threshold",
+    "r200_depth_control_score_maximum_threshold",
+    "r200_depth_control_texture_count_threshold",
+    "r200_depth_control_texture_difference_threshold",
+    "r200_depth_control_second_peak_threshold",
+    "r200_depth_control_neighbor_threshold",
+    "r200_depth_control_lr_threshold",
+    "fisheye_exposure",
+    "fisheye_gain",
+    "fisheye_strobe",
+    "fisheye_external_trigger",
+    "fisheye_color_auto_exposure",
+    "fisheye_color_auto_exposure_mode",
+    "fisheye_color_auto_exposure_rate",
+    "fisheye_color_auto_exposure_sample_rate",
+    "fisheye_color_auto_exposure_skip_frames",
+    "frames_queue_size",
+    "hardware_logger_enabled",
+])
